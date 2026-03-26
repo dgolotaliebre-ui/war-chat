@@ -36,6 +36,7 @@ io.on('connection', (socket) => {
 
   // Signaling for WebRTC
   socket.on('signal', (data) => {
+    console.log(`[Signaling] Reenviando señal de ${socket.id} hacia ${data.to} (${data.signal.type || 'candidate'})`);
     io.to(data.to).emit('signal', {
       from: socket.id,
       signal: data.signal,
