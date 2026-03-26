@@ -1,0 +1,9 @@
+cd G:\war
+npm run electron:build
+
+
+rmdir /s /q C:\Users\Damia\AppData\Local\electron-builder\Cache
+
+
+
+render

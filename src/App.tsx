@@ -157,13 +157,29 @@ function App() {
           { urls: 'stun:stun2.l.google.com:19302' },
           { urls: 'stun:stun3.l.google.com:19302' },
           { urls: 'stun:stun4.l.google.com:19302' },
+          // Servidores TURN gratuitos de OpenRelayProject para saltar cortafuegos
+          {
+            urls: 'turn:openrelay.metered.ca:80',
+            username: 'openrelayproject',
+            credential: 'openrelayproject'
+          },
+          {
+            urls: 'turn:openrelay.metered.ca:443',
+            username: 'openrelayproject',
+            credential: 'openrelayproject'
+          },
+          {
+            urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+            username: 'openrelayproject',
+            credential: 'openrelayproject'
+          }
         ],
         iceCandidatePoolSize: 10,
       },
     });
 
     peer.on('signal', (signal: any) => {
-      // Log simple signal types if possible
+      console.log(`[ICE] Enviando ${signal.type || 'candidate'} a ${userToSignal}`);
       socket.emit('signal', { to: userToSignal, signal });
     });
 
@@ -173,10 +189,12 @@ function App() {
     });
 
     peer.on('stream', async (remoteStream: MediaStream) => {
-      console.log(`Received stream from ${userToSignal}`);
+      console.log(`[WebRTC] Recibido stream de ${userToSignal}. Tracks:`, remoteStream.getTracks().length);
+      
       const audio = document.createElement('audio');
       audio.srcObject = remoteStream;
       audio.autoplay = true;
+      audio.muted = true; // Hack para asegurar que inicie
       // @ts-ignore
       audio.playsInline = true;
       
@@ -192,10 +210,10 @@ function App() {
 
       try {
         await audio.play();
-        console.log(`Playing audio from ${userToSignal}`);
+        audio.muted = false; // Desbloquear audio tras iniciar
+        console.log(`[Audio] Reproduciendo sonido de ${userToSignal}`);
       } catch (err) {
-        console.error('Playback failed, probably blocked by browser policy:', err);
-        // Fallback: try to play on user interaction if needed, but in Electron it should work
+        console.error('[Audio] Error de reproducción (bloqueado por sistema):', err);
       }
       
       document.body.appendChild(audio);
