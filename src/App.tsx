@@ -18,6 +18,7 @@ const electron = window.electronAPI;
 function App() {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isSocketConnected, setIsSocketConnected] = useState(false);
+  const [socketError, setSocketError] = useState<string | null>(null);
   const [username, setUsername] = useState(() => localStorage.getItem('war_username') || `Amigo_${Math.floor(Math.random() * 1000)}`);
   const [editingName, setEditingName] = useState(false);
   const [newName, setNewName] = useState(username);
@@ -71,9 +72,10 @@ function App() {
     loadDevices();
 
     const s = io(SERVER_URL, {
-      transports: ['polling', 'websocket'], // Allow polling for easier wake-up on Render
+      transports: ['polling', 'websocket'],
       reconnection: true,
-      reconnectionAttempts: 20
+      reconnectionAttempts: 20,
+      timeout: 60000, // 60 seconds to allow Render to wake up
     });
     setSocket(s);
 
@@ -85,7 +87,11 @@ function App() {
     s.on('connect_error', (err) => {
       console.error('[Socket] Error de conexión:', err.message);
       setIsSocketConnected(false);
-      // Probablemente el servidor de Render está "durmiendo", reintentando...
+      setSocketError(err.message === 'timeout' ? 'Esperando al servidor (Render está despertando...)' : err.message);
+    });
+
+    s.on('reconnect_attempt', (attempt) => {
+      setSocketError(`Reintentando conexión... (Intento ${attempt})`);
     });
 
     s.on('user-list', (list: User[]) => {
@@ -102,6 +108,14 @@ function App() {
       s.disconnect();
     };
   }, []);
+
+  const manuallyReconnect = () => {
+    if (socket) {
+      setSocketError('Forzando reconexión...');
+      socket.disconnect();
+      socket.connect();
+    }
+  };
 
   // Sincronización automática al conectar/reconectar o cambiar nombre
   useEffect(() => {
@@ -475,8 +489,18 @@ function App() {
           </div>
         </div>
 
-        <div style={{ marginTop: '20px', fontSize: '0.7rem', opacity: 0.6 }}>
-          Estado del Servidor: {isSocketConnected ? <span style={{ color: '#10b981' }}>● Conectado</span> : <span style={{ color: '#ef4444' }}>● Desconectado (Despertando...)</span>}
+        <div style={{ marginTop: '20px', fontSize: '0.7rem', opacity: 0.6, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div>
+            Estado: {isSocketConnected ? <span style={{ color: '#10b981' }}>● Servidor Conectado</span> : <span style={{ color: '#ef4444' }}>● {socketError || 'Desconectado'}</span>}
+          </div>
+          {!isSocketConnected && (
+            <button 
+              onClick={manuallyReconnect}
+              style={{ padding: '4px 8px', background: '#334155', border: 'none', borderRadius: '4px', color: 'white', cursor: 'pointer', alignSelf: 'flex-start' }}
+            >
+              Forzar Reconexión
+            </button>
+          )}
           <div style={{ marginTop: '4px' }}>Consola: Ctrl + Shift + I</div>
         </div>
       </main>
