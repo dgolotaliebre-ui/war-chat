@@ -292,7 +292,7 @@ function App() {
         socket?.emit('set-voice-status', true);
         
         users.forEach(user => {
-          if (user.isConnectedToVoice && user.username !== username && user.socketId) {
+          if (user.isConnectedToVoice && user.socketId !== socket!.id && user.socketId) {
             // Initiate connection as initiator
             createPeer(user.socketId, socket!, stream, true);
           }

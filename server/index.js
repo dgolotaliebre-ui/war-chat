@@ -10,6 +10,11 @@ const io = new Server(server, {
   },
 });
 
+// Ruta básica para Health Check (Render)
+app.get('/', (req, res) => {
+  res.send('WAR Signaling Server is running OK');
+});
+
 const users = {};
 
 io.on('connection', (socket) => {
