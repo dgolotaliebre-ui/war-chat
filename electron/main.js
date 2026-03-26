@@ -17,6 +17,14 @@ function createWindow() {
     backgroundColor: '#0f172a',
   });
 
+  // Atajo para abrir consola en producción (Ctrl+Shift+I)
+  win.webContents.on('before-input-event', (event, input) => {
+    if (input.control && input.shift && input.key.toLowerCase() === 'i') {
+      win.webContents.openDevTools();
+      event.preventDefault();
+    }
+  });
+
   if (process.env.NODE_ENV === 'development') {
     win.loadURL('http://localhost:5173');
   } else {

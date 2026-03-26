@@ -17,6 +17,7 @@ const electron = window.electronAPI;
 
 function App() {
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [isSocketConnected, setIsSocketConnected] = useState(false);
   const [username, setUsername] = useState(() => localStorage.getItem('war_username') || `Amigo_${Math.floor(Math.random() * 1000)}`);
   const [editingName, setEditingName] = useState(false);
   const [newName, setNewName] = useState(username);
@@ -78,10 +79,12 @@ function App() {
 
     s.on('connect', () => {
       console.log('[Socket] Conectado exitosamente al servidor:', SERVER_URL);
+      setIsSocketConnected(true);
     });
 
     s.on('connect_error', (err) => {
       console.error('[Socket] Error de conexión:', err.message);
+      setIsSocketConnected(false);
       // Probablemente el servidor de Render está "durmiendo", reintentando...
     });
 
@@ -449,6 +452,11 @@ function App() {
               </div>
             ))}
           </div>
+        </div>
+
+        <div style={{ marginTop: '20px', fontSize: '0.7rem', opacity: 0.6 }}>
+          Estado del Servidor: {isSocketConnected ? <span style={{ color: '#10b981' }}>● Conectado</span> : <span style={{ color: '#ef4444' }}>● Desconectado (Despertando...)</span>}
+          <div style={{ marginTop: '4px' }}>Consola: Ctrl + Shift + I</div>
         </div>
       </main>
 
