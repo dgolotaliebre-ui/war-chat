@@ -103,12 +103,15 @@ function App() {
     };
   }, []);
 
-  // JOIN ON RECONNECT / NAME CHANGE
+  // Sincronización automática al conectar/reconectar o cambiar nombre
   useEffect(() => {
-    if (socket) {
+    if (socket && isSocketConnected) {
       socket.emit('join', username);
+      if (inVoice) {
+        socket.emit('set-voice-status', true);
+      }
     }
-  }, [socket, username]);
+  }, [socket, isSocketConnected, username, inVoice]);
 
   // SIGNALING HANDLER (Voice state dependent)
   useEffect(() => {

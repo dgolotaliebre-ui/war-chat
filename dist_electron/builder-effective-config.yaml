@@ -1,0 +1,25 @@
+directories:
+  output: dist_electron
+  buildResources: build
+appId: com.warchat.app
+productName: WAR Chat
+copyright: Copyright © 2026 WAR Team
+win:
+  icon: build/icon.png
+  target:
+    - target: nsis
+      arch:
+        - x64
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: WAR Chat
+files:
+  - filter:
+      - dist/**/*
+      - electron/**/*
+      - package.json
+asar: true
+electronVersion: 25.9.8
